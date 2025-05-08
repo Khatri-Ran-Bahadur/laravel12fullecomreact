@@ -6,6 +6,9 @@ use App\Helpers\ImageUploader;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductStoreRequest;
 use App\Http\Requests\ProductStoreUpdateRequest;
+use App\Http\Requests\ProductUpdateRequest;
+use App\Models\Brand;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use App\Models\Product;
@@ -52,39 +55,39 @@ class ProductController extends Controller
 
     public function create(Request $request): Response
     {
-        return Inertia::render('Admin/Products/Create');
+        $brands = Brand::select('id', 'name')->get();
+        $categories = Category::select('id', 'name', 'parent_id')->with('descendants')->isParent()->get();
+        $flattenedCategies = $this->flattenCategories($categories);
+        return Inertia::render('Admin/Products/Create', [
+            'brands' => $brands,
+            'categories' => $flattenedCategies,
+        ]);
     }
 
     public function store(ProductStoreRequest $request): RedirectResponse
     {
-        $data = $request->only('name');
-        if ($request->hasFile('image')) {
-            $data['image'] = ImageUploader::uploadImage($request->file('image'), 'products');
-        }
-
-        Product::create($data);
-        return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
+        $data = $request->only('name', 'description', 'status', 'brand_id', 'category_id', 'price', 'quantity', 'barcode', 'sku');
+        $product = Product::create($data);
+        return redirect()->route('admin.products.edit', $product->id)->with('success', 'Product created successfully.');
     }
 
     public function edit($id): Response
     {
         $product = Product::findOrFail($id);
         $product->image = asset('storage/' . $product->image);
+        $brands = Brand::select('id', 'name')->get();
+        $categories = Category::select('id', 'name', 'parent_id')->with('descendants')->isParent()->get();
+        $flattenedCategies = $this->flattenCategories($categories);
         return Inertia::render('Admin/Products/Edit', [
             'product' => $product,
+            'brands' => $brands,
+            'categories' => $flattenedCategies
         ]);
     }
 
-    public function update(ProductStoreUpdateRequest $request, Product $product): RedirectResponse
+    public function update(ProductUpdateRequest $request, Product $product): RedirectResponse
     {
-        // $product = Product::findOrFail($id);
-        $data = $request->only('name');
-
-        if ($request->hasFile('image')) {
-            ImageUploader::deleteImage($product->image);
-            $data['image'] = ImageUploader::uploadImage($request->file('image'), 'products');
-        }
-
+        $data = $request->only('name', 'description', 'status', 'brand_id', 'category_id', 'price', 'quantity', 'barcode', 'sku');
         $product->update($data);
         return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
     }
@@ -95,5 +98,25 @@ class ProductController extends Controller
         ImageUploader::deleteImage($product->image);
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
+    }
+
+
+    public function flattenCategories($categories, $prefix = '', $result = [])
+    {
+        foreach ($categories as $category) {
+            $path = $prefix ? "$prefix > $category->name" : $category->name;
+
+            $result[] = [
+                'id' => $category->id,
+                'name' => $category->name,
+                'path' => $path,
+                'level' => substr_count($path, '>'),
+            ];
+
+            if ($category->descendants && $category->descendants->count() > 0) {
+                $result = $this->flattenCategories($category->descendants, $path, $result);
+            }
+        }
+        return $result;
     }
 }
