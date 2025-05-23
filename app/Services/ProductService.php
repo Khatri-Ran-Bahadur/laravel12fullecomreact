@@ -23,7 +23,7 @@ class ProductService
                 ->toArray();
 
             $match = array_filter($existingData, function ($existingOption) use ($optionIds) {
-                return $existingOption['variation_type_option_ids'] === $optionIds;
+                return $existingOption['variation_type_option_ids'] === json_encode($optionIds);
             });
 
             if (!empty($match)) {
@@ -44,6 +44,11 @@ class ProductService
     public function cartesianProduct($variationTypes, $defaultQuantity, $defaultPrice)
     {
         $result = [[]];
+        // colors
+        // sizes
+        // styles
+        //red and black
+        //small
 
         foreach ($variationTypes as $index => $variationType) {
             $temp = [];
@@ -59,6 +64,7 @@ class ProductService
                     $temp[] = $newCombination;
                 }
             }
+
             $result = $temp;
         }
         foreach ($result as &$combination) {
@@ -67,6 +73,7 @@ class ProductService
                 $combination['price'] = $defaultPrice;
             }
         }
+
         return $result;
     }
 
