@@ -1,0 +1,27 @@
+.swiper-button-next,
+.swiper-button-prev {
+    color: #4b5563;
+    font-size: 12px;
+}
+.dropdown-menu {
+    display: none;
+}
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+.nested-dropdown-menu {
+    display: none;
+    left: 100%;
+    top: 0;
+}
+.nested-dropdown:hover .nested-dropdown-menu {
+    display: block;
+}
+
+.product-image-thumb {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.product-image-thumb.active {
+    border-color: #4f46e5;
+}

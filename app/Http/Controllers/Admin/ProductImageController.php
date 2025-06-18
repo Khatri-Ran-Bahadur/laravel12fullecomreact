@@ -32,9 +32,9 @@ class ProductImageController extends Controller
 
     public function store(Request $request, Product $product)
     {
+
         $request->validate([
             'images' => 'required|array',
-            'images.*' => 'image|max:2048',
         ]);
 
         foreach ($request->file('images', []) as $image) {

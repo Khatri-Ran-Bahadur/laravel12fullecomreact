@@ -13,7 +13,7 @@ import { useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: 'dashboard' },
-    { title: 'Brands', href: route('admin.brands.index') },
+    { title: 'categories', href: route('admin.categories.index') },
     { title: 'Create Category', href: '' },
 ];
 
@@ -33,7 +33,7 @@ interface CategoryWithPath extends Category {
     level: number;
 }
 
-export default function Create({ brands }: { brands: CategoryWithPath[] }) {
+export default function Create({ categories }: { categories: CategoryWithPath[] }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         description: '',
@@ -52,7 +52,7 @@ export default function Create({ brands }: { brands: CategoryWithPath[] }) {
 
         const normalizeParentId = data.parent_id === 'none' ? null : Number(data.parent_id);
 
-        post(route('admin.brands.store'), {
+        post(route('admin.categories.store'), {
             data: {
                 ...data,
                 parent_id: normalizeParentId,
@@ -114,7 +114,7 @@ export default function Create({ brands }: { brands: CategoryWithPath[] }) {
                                             </div>
                                         </div>
 
-                                        <Link href={route('admin.brands.index')}>
+                                        <Link href={route('admin.categories.index')}>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -207,8 +207,8 @@ export default function Create({ brands }: { brands: CategoryWithPath[] }) {
                                                         <SelectItem value="none" className="text-gray-500">
                                                             No Parent Category
                                                         </SelectItem>
-                                                        {brands &&
-                                                            brands.map((category) => (
+                                                        {categories &&
+                                                            categories.map((category) => (
                                                                 <SelectItem key={category.id} value={String(category.id)} className="pl-2">
                                                                     <span
                                                                         className="inline-block"

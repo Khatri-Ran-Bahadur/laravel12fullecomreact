@@ -53,7 +53,7 @@ export default function Create({ category, categories }: { category: Category; c
 
         const normalizeParentId = data.parent_id === 'none' ? null : Number(data.parent_id);
 
-        post(route('admin.categories.store'), {
+        post(route('admin.categories.update', category.id), {
             data: {
                 ...data,
                 parent_id: normalizeParentId,

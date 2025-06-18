@@ -15,6 +15,22 @@ export interface NavGroup {
     items: NavItem[];
 }
 
+export interface ProductListItem{
+    id: number;
+    name: string;
+    slug: string;
+    image: string;
+    price: number;
+    isDiscount?: boolean;
+    discount?: number;
+    description?: string;
+    isFeatured?: boolean;
+    isBestSeller?: boolean;
+    isNewArrival?: boolean;
+    categoryId?: number;
+    categoryName?: string;
+}
+
 export interface NavItem {
     title: string;
     href: string;

@@ -22,8 +22,8 @@ class CtaegoryStoreUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|min:2|max:50',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'name' => 'required|min:2|max:50|unique:categories,name,' . $this->category?->id,
+            'image' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id'
         ];

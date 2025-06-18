@@ -25,4 +25,9 @@ class VariationTypeOption extends Model implements HasMedia
     {
         return $this->belongsTo(VariationType::class);
     }
+
+    public function getFirstImageUrl()
+    {
+        return $this->getFirstImageUrl('images', 'small') ?: asset('placeholder.png');
+    }
 }
