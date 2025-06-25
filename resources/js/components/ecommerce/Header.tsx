@@ -4,7 +4,7 @@ import { useState } from 'react';
 import CategoryMenuItem from './CategoryMenuItem';
 
 export default function EcommerceHeader() {
-    const { parentCategories } = usePage().props as any;
+    const { parentCategories, auth, cartCount = 0 } = usePage().props as any;
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
     const [isLanguageOpen, setIsLanguageOpen] = useState(false);
@@ -53,7 +53,6 @@ export default function EcommerceHeader() {
                         <div className="relative">
                             <button onClick={() => setIsLanguageOpen(!isLanguageOpen)} className="flex items-center space-x-1 hover:text-gray-300">
                                 <span>English</span>
-
                                 <ChevronDown className="h-3 w-3" />
                             </button>
                             {isLanguageOpen && (
@@ -70,11 +69,6 @@ export default function EcommerceHeader() {
                                 </div>
                             )}
                         </div>
-
-                        <Link href="/login" className="flex items-center space-x-1 hover:text-gray-300">
-                            <User className="h-5 w-5" />
-                            <span>Login</span>
-                        </Link>
                     </div>
                 </div>
             </div>
@@ -102,28 +96,38 @@ export default function EcommerceHeader() {
                     <div className="flex items-center space-x-6">
                         {/* Cart Dropdown */}
                         <div className="relative">
-                            <button onClick={() => setIsCartOpen(!isCartOpen)} className="relative hover:text-indigo-600">
+                            <Link href={route('cart.index')} className="relative hover:text-indigo-600">
                                 <ShoppingCart className="h-6 w-6" />
-                                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                                    2
-                                </span>
-                            </button>
-                            {isCartOpen && (
-                                <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-md bg-white shadow-lg">
-                                    {/* Cart content */}
-                                </div>
-                            )}
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </Link>
                         </div>
 
-                        <div className="flex space-x-4">
-                            <Link href="/login" className="text-gray-700 hover:text-indigo-600">
-                                Login
-                            </Link>
-                            <span className="text-gray-300">|</span>
-                            <Link href="/register" className="text-gray-700 hover:text-indigo-600">
-                                Register
-                            </Link>
-                        </div>
+                        {/* Conditional Auth Section */}
+                        {auth.user ? (
+                            <div className="flex items-center space-x-4">
+                                <Link href={route('dashboard')} className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600">
+                                    <User className="h-5 w-5" />
+                                    <span>{auth.user.name}</span>
+                                </Link>
+                                <Link href={route('logout')} method="post" as="button" className="text-gray-700 hover:text-indigo-600">
+                                    Logout
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="flex space-x-4">
+                                <Link href="/login" className="text-gray-700 hover:text-indigo-600">
+                                    Login
+                                </Link>
+                                <span className="text-gray-300">|</span>
+                                <Link href="/register" className="text-gray-700 hover:text-indigo-600">
+                                    Register
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 
-class CartSevice
+class CartService
 {
     private ?array $cachedCartItems = null;
     private const COOKIE_NAME = 'cartItems';
@@ -182,7 +182,7 @@ class CartSevice
             $cartItem->product_id = $productId;
             $cartItem->quantity = $quantity;
             $cartItem->price = $price;
-            $cartItem->variation_type_option_ids = json_encode($optionIds);
+            $cartItem->variation_type_option_ids = $optionIds;
             $cartItem->save();
         }
     }
@@ -237,5 +237,65 @@ class CartSevice
         } else {
             Cookie::queue(self::COOKIE_NAME, json_encode([]), self::COOKIE_LIFETIME);
         }
+    }
+
+
+    public function moveCartItemsToDatabase($userId)
+    {
+        $cartItems = $this->getCartItemsFromCookies();
+        foreach ($cartItems as $cartItem) {
+            $existingItem = Cart::where('product_id', $cartItem['product_id'])->where('user_id', $cartItem['user_id'])->where('variation_type_option_ids', $cartItem['option_ids'])->first();
+            if ($existingItem) {
+                $existingItem->quantity = $cartItem['quantity'];
+                $existingItem->save();
+            } else {
+                $newItem = new Cart();
+                $newItem->user_id = $userId;
+                $newItem->product_id = $cartItem['product_id'];
+                $newItem->quantity = $cartItem['quantity'];
+                $newItem->price = $cartItem['price'];
+                $newItem->variation_type_option_ids = $cartItem['option_ids'];
+                $newItem->save();
+            }
+        }
+        Cookie::queue(self::COOKIE_NAME, '', -1);
+    }
+
+    public function getTotalQuantity(): int
+    {
+        $totalQuantity = 0;
+        foreach ($this->getCartItems() as $cartItem) {
+            $totalQuantity += $cartItem['quantity'];
+        }
+        return $totalQuantity;
+    }
+
+    public function getTotalPrice(): float
+    {
+        $totalPrice = 0;
+        foreach ($this->getCartItems() as $cartItem) {
+            $totalPrice += $cartItem['price'] * $cartItem['quantity'];
+        }
+        return $totalPrice;
+    }
+
+    public function getSubTotal(): float
+    {
+        $totalPrice = 0;
+        foreach ($this->getCartItems() as $cartItem) {
+            $totalPrice += $cartItem['price'] * $cartItem['quantity'];
+        }
+        return $totalPrice;
+    }
+
+    public function getCartCount(): int
+    {
+        $cartCount = 0;
+        if (Auth::check()) {
+            $cartCount = Cart::where('user_id', Auth::id())->count();
+        } else {
+            $cartCount = count($this->getCartItemsFromCookies());
+        }
+        return $cartCount;
     }
 }

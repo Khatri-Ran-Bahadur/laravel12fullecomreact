@@ -9,6 +9,7 @@ use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Models\Category;
 use Illuminate\Support\Str as str;
+use App\Services\CartService;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -46,6 +47,9 @@ class HandleInertiaRequests extends Middleware
         $pCategories = Category::isParent()->with('children')->get();
         $parentCategories = CategoryListResource::collection($pCategories)->toArray($request);
 
+        $cartService = app(CartService::class);
+        $cartCount = $cartService->getCartCount();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -59,6 +63,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'parentCategories' => $parentCategories,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'cartCount' => $cartCount
         ];
     }
 }
