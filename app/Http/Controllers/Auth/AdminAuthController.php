@@ -37,6 +37,7 @@ class AdminAuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
+
             // Check if user is admin
             if ($user->role !== 'admin') {
                 Auth::logout();

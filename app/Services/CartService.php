@@ -243,6 +243,9 @@ class CartService
     public function moveCartItemsToDatabase($userId)
     {
         $cartItems = $this->getCartItemsFromCookies();
+        if (empty($cartItems)) {
+            return; // No items to move
+        }
         foreach ($cartItems as $cartItem) {
             $existingItem = Cart::where('product_id', $cartItem['product_id'])->where('user_id', $cartItem['user_id'])->where('variation_type_option_ids', $cartItem['option_ids'])->first();
             if ($existingItem) {
@@ -259,6 +262,8 @@ class CartService
             }
         }
         Cookie::queue(self::COOKIE_NAME, '', -1);
+
+        $this->cachedCartItems = null;
     }
 
     public function getTotalQuantity(): int

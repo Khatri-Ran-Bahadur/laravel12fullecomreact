@@ -1,6 +1,6 @@
 import EcomLayout from '@/layouts/ecom-layout'
 import { Head, Link, useForm } from '@inertiajs/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface CartItem {
   id: string
@@ -21,6 +21,30 @@ interface CheckoutProps {
   subtotal: number
   shipping: number
   tax: number
+  billingData?: {
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
+    address: string
+    city: string
+    state: string
+    zip: string
+    country: string
+    notes: string
+  }
+  shippingData?: {
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
+    address: string
+    city: string
+    state: string
+    zip: string
+    country: string
+  }
+  sameAsBilling?: boolean
 }
 
 export default function Checkout({
@@ -30,34 +54,99 @@ export default function Checkout({
   subtotal,
   shipping,
   tax,
+  billingData,
+  shippingData,
+  sameAsBilling: initialSameAsBilling = true,
 }: CheckoutProps) {
-  const [sameAsBilling, setSameAsBilling] = useState(true)
+  const [sameAsBilling, setSameAsBilling] = useState(initialSameAsBilling)
 
   const { data, setData, post, processing, errors } = useForm({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: '',
-    notes: '',
-    shipping_first_name: '',
-    shipping_last_name: '',
-    shipping_email: '',
-    shipping_phone: '',
-    shipping_address: '',
-    shipping_city: '',
-    shipping_state: '',
-    shipping_zip: '',
-    shipping_country: '',
+    first_name: billingData?.first_name || '',
+    last_name: billingData?.last_name || '',
+    email: billingData?.email || '',
+    phone: billingData?.phone || '',
+    address: billingData?.address || '',
+    city: billingData?.city || '',
+    state: billingData?.state || '',
+    zip: billingData?.zip || '',
+    country: billingData?.country || '',
+    notes: billingData?.notes || '',
+    shipping_first_name: shippingData?.first_name || billingData?.first_name || '',
+    shipping_last_name: shippingData?.last_name || billingData?.last_name || '',
+    shipping_email: shippingData?.email || billingData?.email || '',
+    shipping_phone: shippingData?.phone || billingData?.phone || '',
+    shipping_address: shippingData?.address || billingData?.address || '',
+    shipping_city: shippingData?.city || billingData?.city || '',
+    shipping_state: shippingData?.state || billingData?.state || '',
+    shipping_zip: shippingData?.zip || billingData?.zip || '',
+    shipping_country: shippingData?.country || billingData?.country || '',
   })
+
+  useEffect(() => {
+    if (billingData && Object.keys(billingData).length > 0) {
+      setData((prevData) => ({
+        ...prevData,
+        ...billingData,
+        shipping_first_name: shippingData?.first_name || billingData.first_name || '',
+        shipping_last_name: shippingData?.last_name || billingData?.last_name || '',
+        shipping_email: shippingData?.email || billingData?.email || '',
+        shipping_phone: shippingData?.phone || billingData?.phone || '',
+        shipping_address: shippingData?.address || billingData.address || '',
+        shipping_city: shippingData?.city || billingData.city || '',
+        shipping_state: shippingData?.state || billingData?.state || '',
+        shipping_zip: shippingData?.zip || billingData?.zip || '',
+        shipping_country: shippingData?.country || billingData?.country || '',
+      }))
+    }
+  }, [billingData, shippingData])
+
+  useEffect(() => {
+    if (sameAsBilling) {
+      setData((prevData) => ({
+        ...prevData,
+        shipping_first_name: prevData.first_name,
+        shipping_last_name: prevData.last_name,
+        shipping_email: prevData.email,
+        shipping_phone: prevData.phone,
+        shipping_address: prevData.address,
+        shipping_city: prevData.city,
+        shipping_state: prevData.state,
+        shipping_zip: prevData.zip,
+        shipping_country: prevData.country,
+      }))
+    }
+  }, [
+    sameAsBilling,
+    data.first_name,
+    data.last_name,
+    data.email,
+    data.phone,
+    data.address,
+    data.city,
+    data.state,
+    data.zip,
+    data.country,
+  ])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    post(route('checkout.process'))
+
+    const submitData = sameAsBilling
+      ? {
+          ...data,
+          shipping_first_name: data.first_name,
+          shipping_last_name: data.last_name,
+          shipping_email: data.email,
+          shipping_phone: data.phone,
+          shipping_address: data.address,
+          shipping_city: data.city,
+          shipping_state: data.state,
+          shipping_zip: data.zip,
+          shipping_country: data.country,
+        }
+      : data
+
+    post(route('checkout.process'), submitData)
   }
 
   const formatPrice = (price: number) => {
@@ -450,7 +539,7 @@ export default function Checkout({
                           <input
                             type="text"
                             id="shipping_zip"
-                            value={data.shipping_state}
+                            value={data.shipping_zip}
                             onChange={(e) => setData('shipping_zip', e.target.value)}
                             className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                           />

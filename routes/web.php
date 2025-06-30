@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [CartController::class, 'checkoutForm'])->name('checkout');
     Route::get('/payment', [CartController::class, 'paymentForm'])->name('payment');
+    Route::post('/checkout/process', [CartController::class, 'processCheckout'])->name('checkout.process');
     Route::post('/payment/process', [CartController::class, 'processPayment'])->name('payment.process');
     Route::get('/order-complete/{order}', [CartController::class, 'orderComplete'])->name('order.complete');
 });
@@ -43,8 +44,6 @@ Route::middleware(['auth', UserCheckMiddleware::class])->group(function () {
         });
     });
 });
-
-
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

@@ -1,5 +1,7 @@
 import EcomLayout from '@/layouts/ecom-layout'
 import { Head, Link, useForm } from '@inertiajs/react'
+import { useEffect } from 'react'
+import { router } from '@inertiajs/react'
 
 interface CartItem {
   id: string
@@ -22,6 +24,7 @@ interface PaymentProps {
   billing: any
   shipping: any
 }
+
 export default function Payment({
   cartItems,
   subtotal,
@@ -30,6 +33,22 @@ export default function Payment({
   billing,
   shipping,
 }: PaymentProps) {
+  // Redirect to checkout if billing info is missing
+  useEffect(() => {
+    if (!billing) {
+      router.visit(route('checkout'), {
+        onError: () => {
+          // Handle error if needed
+        },
+      })
+    }
+  }, [billing])
+
+  // Don't render if billing info is missing
+  if (!billing) {
+    return null
+  }
+
   const { data, setData, post, processing, errors } = useForm({
     payment_method: 'card',
     agree: false,
@@ -46,6 +65,7 @@ export default function Payment({
       currency: 'USD',
     }).format(price)
   }
+
   return (
     <EcomLayout>
       <Head title="Payment - ShopMart" />
@@ -72,6 +92,48 @@ export default function Payment({
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <h1 className="mb-6 text-2xl font-bold">Payment Method</h1>
+        {/* Billing Information Summary */}
+        <div className="mb-6 rounded-lg bg-gray-50 p-4">
+          <h3 className="mb-3 text-lg font-semibold">Billing Information</h3>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            <div>
+              <span className="text-sm font-medium text-gray-600">Name:</span>
+              <span className="ml-2 text-sm">
+                {billing.first_name} {billing.last_name}
+              </span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-600">Email:</span>
+              <span className="ml-2 text-sm">{billing.email}</span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-600">Phone:</span>
+              <span className="ml-2 text-sm">{billing.phone}</span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-600">Address:</span>
+              <span className="ml-2 text-sm">{billing.address}</span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-600">City:</span>
+              <span className="ml-2 text-sm">
+                {billing.city}, {billing.state} {billing.zip}
+              </span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-600">Country:</span>
+              <span className="ml-2 text-sm">{billing.country}</span>
+            </div>
+          </div>
+          <div className="mt-3">
+            <Link
+              href={route('checkout')}
+              className="text-sm text-indigo-600 hover:text-indigo-800"
+            >
+              Edit billing information
+            </Link>
+          </div>
+        </div>
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Payment Methods */}
           <div className="lg:w-2/3">
@@ -257,15 +319,14 @@ export default function Payment({
                   <button
                     type="submit"
                     disabled={processing}
-                    className="w-full rounded-md bg-indigo-600 py-3 text-white hover:bg-indigo-700"
+                    className="w-full rounded-md bg-indigo-600 py-3 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {processing ? 'Processing...' : `Pay Now $${totalPrice}`}
+                    {processing ? 'Processing...' : `Pay Now ${formatPrice(totalPrice)}`}
                   </button>
                 </form>
               </div>
             </div>
           </div>
-          {/* Order Summary */}
           {/* Order Summary */}
           <div className="lg:w-1/3">
             <div className="sticky top-6 overflow-hidden rounded-lg bg-white shadow-sm">
